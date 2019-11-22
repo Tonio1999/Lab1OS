@@ -1,55 +1,26 @@
-/* Header File for Operating Systems C-Linked List for storing strings*/
-
-#ifndef LIST_H_INCLUDED
-#define LIST_H_INCLUDED
-
-/* Definition of the node*/
-
-/* Function #1 - Definition of the node */
-typedef struct node 
+#include <stdbool.h>
+typedef int elem;
+struct node 
 {
-    char* data;             // string w/o having to be preallocated with mem size
-    struct node* next;
-}node;
-
-/* Function #2 - Definition of the list*/
-typedef struct list 
+	elem value;
+	struct node *next;
+};
+typedef struct node node_t;
+struct list 
 {
-    node* head;
-    node* tail;
-}list;
-
-/* Function #3 - Adds the string to node*/
-node* create_node(char* data);
-
-/* Function #4 - Allocates and initializes a new list */
-list* create_list();
-
-/* Adds item to end of the list. This function allocates a
-* new buffer and copies the string from item (use malloc,
-* strlen, and strncpy; or try strdup).
-* Returns 0 if successful, non-zero otherwise. */
-int add_to_list(list* ll, char* item);
-
-/* Removes the string from the front of the list and
-* returns a pointer to it. The caller is expected to free
-* the string returned when finished with it. */
-char* remove_from_list(list* ll);
-
-/* Prints every string in the list, with a new line
-* character at the end of each string */
-void print_list(list *ll);
-
-/* Flushes (clears) the entire list and re-initializes the
-* list. The passed pointer ll should still point to a
-* valid, empty list when this function returns. Any memory
-* allocated to store items in the list should be freed. */
-void flush_list(list* ll);
-
-/* De-allocates all data for the list. Ensure all memory
-* allocated for this list is freed, including any
-* allocated strings and the list itself. */
-void free_list(list *ll);
-
-
-#endif // LIST_H_INCLUDED
+	node_t *head;
+};
+typedef struct list list_other;
+list_other *list_alloc();
+void list_free(list_other *mylist);
+void list_print(list_other *mylist);
+int list_length(list_other *mylist);
+void list_add_to_back(list_other *mylist, elem value);
+void list_add_to_front(list_other *mylist, elem value);
+void list_add_at_index(list_other *mylist, elem value, int index);
+elem list_remove_from_back(list_other *mylist);
+elem list_remove_from_front(list_other *mylist);
+elem list_remove_at_index(list_other *mylist, int index);
+bool list_is_in(list_other *mylist, elem value);
+elem list_get_elem_at(list_other *mylist, int index);
+int list_get_index_of(list_other *mylist, elem value);
