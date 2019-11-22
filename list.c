@@ -1,136 +1,181 @@
-/* Source File for Operating Systems C-Linked List for storing strings*/
-
-#include "list.h"
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-
-
-/* Adds the string to node*/
-node* create_node(char* item) 
+#include <stdlib.h>
+#include "list.h"
+list_other *list_alloc() 
 {
-    node* new_node = malloc(sizeof(node));
-    int len = strlen(item);
-    char* new_str = malloc(len + 1);
-    strncpy(new_str, item, len);
-    new_node->data = new_str;
+    list_other *mylist;
+    mylist = malloc(sizeof(list_other));
+	mylist->head = NULL;
+    return mylist;
+}
+void list_free(list_other *mylist) 
+{
+    if (mylist == NULL)
+    {
+        return;
+    }
+    node_t *current_node = mylist->head;
+    node_t *next_node = NULL;
+    while (current_node != NULL)
+    {
+        next_node = current_node->next;
+        free(current_node);
+        current_node = next_node;
+    }
+    mylist->head = NULL;
+    free(mylist);
+}
+// Prints list
+void list_print(list_other *mylist) 
+{
+    node_t *current_node = mylist->head;
+    node_t *next_node = NULL;
+    while (current_node->next != NULL)
+    {
+        printf("%d -> ", current_node->value);
+        next_node = current_node->next;
+        current_node = next_node;
+    }
+	printf("%d", current_node->value);
+	printf("\n");
+}
+
+// Return length 
+int list_length(list_other *mylist) 
+{ 
+    node_t *current_node = mylist->head;
+    int length = 0;
+    while (current_node != NULL)
+    {
+        length ++;
+        current_node = current_node->next;
+    }
+    return length; 
+}
+void list_add_to_back(list_other *mylist, elem value) 
+{
+    node_t *new_node = malloc(sizeof(node_t));
+    new_node->value = value;
     new_node->next = NULL;
-    return new_node;
+    node_t *current_node = mylist->head;
+    while (current_node->next != NULL)
+    {
+        current_node = current_node->next;
+    }
+    current_node->next = new_node;
+}
+void list_add_to_front(list_other *mylist, elem value) 
+{
+    node_t *new_node = malloc(sizeof(node_t));
+    new_node->value = value;
+    new_node->next = mylist->head;
+	mylist->head = new_node;
+}
+void list_add_at_index(list_other *mylist, elem value, int index) 
+{
+    int count = 1;
+    node_t *new_node = malloc(sizeof(node_t));
+    new_node->value = value;
+    new_node->next = NULL;
+    node_t * current_node = mylist->head;
+    node_t* next_node = NULL;
+    while (current_node != NULL && count < (index))
+    {
+        count++;
+        next_node = current_node->next;
+        current_node = next_node;
+    }
+    next_node = current_node->next;
+    current_node->next = new_node;
+    new_node->next = next_node;
+}
+elem list_remove_from_back(list_other *mylist) 
+{ 
+    node_t *prev_node = mylist->head;
+	node_t *current_node = prev_node->next;
+    while (current_node->next != NULL)
+    {
+		prev_node = current_node;
+        current_node = current_node->next;
+    }
+	prev_node->next = NULL;
+    elem value = current_node->value;
+    free(current_node);
+    return value; 
+}
+elem list_remove_from_front(list_other *mylist) 
+{ 
+    node_t *current_node = mylist->head;
+    mylist->head = current_node->next;
+    elem value = current_node->value;
+    free(current_node);
+    return value;
 }
 
-/* Allocates and initializes a new list */
-list* create_list() 
-{
-    list* lst = malloc(sizeof(list));
-    lst->head = NULL;
-    lst->tail = NULL;
-    return lst;
+elem list_remove_at_index(list_other *mylist, int index) 
+{ 
+    int count = 0;
+    node_t *prev_node = mylist->head;
+	node_t *current_node = prev_node->next;
+    while (current_node->next != NULL && count < (index - 1))
+    {
+        count++;
+		prev_node = current_node;
+        current_node = current_node->next;
+    }
+    node_t *temp = current_node;
+    prev_node->next = current_node->next;
+    elem value = temp->value;
+    free(temp);
+    return value;
 }
-
-/* Adds item to end of the list. This function allocates a
-* new buffer and copies the string from item (use malloc,
-* strlen, and strncpy; or try strdup).
-* Returns 0 if successful, non-zero otherwise. */
-int add_to_list(list* ll, char* item) 
+// Checks element
+bool list_is_in(list_other *mylist, elem value) 
 {
-    node* curr = ll->head;
-    node* new_node = create_node(item);
-    if (ll->head == NULL) {
-        ll->head = new_node;
-        ll->tail = new_node;
-        return 0;
-    }
-    else 
+	bool exist;
+    node_t *current_node = mylist->head;
+    
+    while (current_node->next != NULL && !exist)
     {
-        node* temp = malloc(sizeof(node)); // temp for the last item in the list
-        temp = ll->tail;
-        temp->next =  new_node;
-        ll->tail = new_node;
-        return 0;
+		if (current_node->value == value)
+        {
+			exist = true;
+		}
+        current_node = current_node->next;
     }
-    return 1;
+    return exist; 
 }
-
-/* Removes the string from the front of the list and
-* returns a pointer to it. The caller is expected to free
-* the string returned when finished with it. */
-char* remove_from_list(list* ll) 
+// Returns element
+elem list_get_elem_at(list_other *mylist, int index) 
 {
-    node* temp_remov = malloc(sizeof(node));
-    temp_remov = ll->head;
-    char* deleted_str = malloc(sizeof(temp_remov->data));
-
-    if (ll->head == ll->tail)
+	int counter = 0;
+	elem value = 0;
+	node_t *current_node = mylist->head;
+    while (current_node->next != NULL && counter < (index))
     {
-        deleted_str = temp_remov->data;
-        free(ll->tail);
-        ll->head = NULL;
-        ll->tail = NULL;
+		counter++;
+        current_node = current_node->next;
     }
-    else 
+	if (current_node != NULL)
     {
-        deleted_str = temp_remov->data;
-        ll->head = temp_remov->next;
-        free(temp_remov);
-    }
-    return deleted_str;
+		value = current_node->value;
+	}
+	return value; 
 }
-
-/* Prints every string in the list, with a new line
-* character at the end of each string */
-void print_list(list *ll)
+int list_get_index_of(list_other *mylist, elem value) 
 {
-    node *curr = malloc(sizeof(node));
-    curr = ll -> head;
-    printf("Starting the print list function\n");
-    while (curr != NULL)
+	int counter = 0;
+	node_t *current_node = mylist->head;
+    while (current_node->next != NULL)
     {
-        printf("\t%s \n", curr -> data);
-        curr = curr -> next;
+		if (current_node->value == value)
+        {
+			return counter;
+		} else 
+        {
+			counter++;
+			current_node = current_node->next;
+		}
     }
-    printf("Ended the print list function\n");
-    return;
-}
-
-/* Flushes (clears) the entire list and re-initializes the
-* list. The passed pointer ll should still point to a
-* valid, empty list when this function returns. Any memory
-* allocated to store items in the list should be freed. */
-void flush_list(list* ll)
-{
-    node *curr = malloc(sizeof(node));
-    curr = ll -> head;
-    node *next = malloc(sizeof(node));
-    while (curr != NULL )
-    {
-        next = curr -> next;
-        free(curr);
-        curr = next;
-    }
-    free(next);
-    free(ll);
-    ll = create_list();
-    return;
-}
-
-/* De-allocates all data for the list. Ensure all memory
-* allocated for this list is freed, including any
-* allocated strings and the list itself. */
-void free_list(list *ll)
-{
-    node *curr = malloc(sizeof(node));
-    curr = ll -> head;
-    node *next = malloc(sizeof(node));
-    while (curr != NULL )
-    {
-        next = curr -> next;
-        free(curr->data);
-        free(curr);
-        curr = next;
-    }
-    free(next);
-    free(ll);
-    free(curr);
-    return;
-
+	return counter; 
 }
